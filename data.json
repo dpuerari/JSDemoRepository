@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "email": "test@test.it",
+    "firstName": "Test",
+    "lastName": "User",
+    "salaryUSD": 70000,
+    "localCurrency": "EUR",
+    "dateBirth": "1990-01-01",
+    "startDate": "2020-01-01",
+    "isActive": true
+  },
+  {
+    "id": 2,
+    "email": "test@test.it2",
+    "firstName": "Test2",
+    "lastName": "User2",
+    "salaryUSD": 70000,
+    "localCurrency": "EUR",
+    "dateBirth": "1990-01-01",
+    "startDate": "2020-01-01",
+    "isActive": true
+  }
+]
