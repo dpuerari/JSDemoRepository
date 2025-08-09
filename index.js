@@ -1,72 +1,105 @@
-import employees from "./data.json" assert { type: "json" };
+import employees from "./data.json" with { type: "json" };
 import createPrompt from "prompt-sync";
 let prompt = createPrompt();
 
-let employee = {};
-
-//first name validation
-let firstName = prompt("Enter first name: ");
-if (!firstName) {
-  console.log("First name is required.");
-  process.exit(1);
-}
-employee.firstName = firstName;
-
-//last name validation
-let lastName = prompt("Enter last name: ");
-if (!lastName) {
-  console.log("Last name is required.");
-  process.exit(1);
-}
-employee.lastName = lastName;
-
-//year validation
-let startDateYear = prompt("Enter start year (1990-2025): ");
-startDateYear = Number(startDateYear);
-if (!Number.isInteger(startDateYear)) {
-  console.log("Start year must be an integer.");
-  process.exit(1);
+function getInput(promptText, validator, transformer) {
+  let value = prompt(promptText);
+  if (validator && !validator(value)) {
+    console.error(`Invalid input: ${value}`);
+    process.exit(1);
+  }
+  return value;
 }
 
-if (startDateYear < 1990 || startDateYear > 2025) {
-  console.log("Start year must be between 1990 and 2025.");
-  process.exit(1);
+// Validation functions ---------------------------------------------------------------------
+
+const isStringInputValid = function (input) {
+  return input ? true : false;
+};
+
+const isBooleanInputValid = function (input) {
+  return input === "yes" || input === "no";
+};
+
+const isStartYearInputValid = function (input) {
+  const year = Number(input);
+  if (!Number.isInteger(year) || year < 1990 || year > 2025) {
+    return false;
+  }
+  return true;
+};
+
+const isStartMonthInputValid = function (input) {
+  const month = Number(input);
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    return false;
+  }
+  return true;
+};
+
+const isStartDayInputValid = function (input) {
+  const day = Number(input);
+  if (!Number.isInteger(day) || day < 1 || day > 31) {
+    return false;
+  }
+  return true;
+};
+
+// Application commands ---------------------------------------------------------------------
+
+function listEmployees() {
+  console.log("Listing all employees:");
+  console.log("");
+
+  for (let emp of employees) {
+    for (let property in emp) {
+      console.log(`${property}: ${emp[property]}`);
+    }
+    console.log(""); // Add a blank line between employees
+    prompt('press "Enter" to continue');
+  }
+  console.log("End of employee list.");
 }
 
-//month validation
-let startDateMonth = prompt("Enter start month (1-12): ");
-startDateMonth = Number(startDateMonth);
+function addEmployee() {
+  console.log("Add employee -------------------------");
+  console.log("");
 
-if (!Number.isInteger(startDateMonth)) {
-  console.log("Start month must be an integer.");
-  process.exit(1);
+  let employee = {};
+
+  employee.firstName = getInput("First name: ", isStringInputValid);
+  employee.lastName = getInput("Last name: ", isStringInputValid);
+  let startDateYear = getInput(
+    "Start year (1990-2025): ",
+    isStartYearInputValid
+  );
+  let startDateMonth = getInput("Start month (1-12): ", isStartMonthInputValid);
+  let startDateDay = getInput("Start day (1-31): ", isStartDayInputValid);
+  employee.startDate = new Date(
+    startDateYear,
+    startDateMonth - 1,
+    startDateDay
+  );
+  employee.isActive = getInput("Is active (yes/no): ", isBooleanInputValid);
+  //output the employee object
+  const jsonOutput = JSON.stringify(employee, null, 2);
+  console.log("Employee object:", jsonOutput);
 }
 
-if (startDateMonth < 1 || startDateMonth > 12) {
-  console.log("Start month must be between 1 and 12.");
-  process.exit(1);
-}
+// Get the command the user wants to execute ------------------------------------------------
 
-//day validation
-let startDateDay = prompt("Enter start day (1-31): ");
-startDateDay = Number(startDateDay);
-if (!Number.isInteger(startDateDay)) {
-  console.log("Start day must be an integer.");
-  process.exit(1);
-}
-if (startDateDay < 1 || startDateDay > 31) {
-  console.log("Start day must be between 1 and 31.");
-  process.exit(1);
-}
-employee.startDate = new Date(startDateYear, startDateMonth - 1, startDateDay);
+const command = process.argv[2].toLowerCase();
 
-let isActive = prompt("Is the employee active? (yes/no): ").toLowerCase();
-if (isActive !== "yes" && isActive !== "no") {
-  console.log('Please enter "yes" or "no".');
-  process.exit(1);
-}
-employee.isActive = isActive === "yes";
+switch (command) {
+  case "list":
+    listEmployees();
+    break;
 
-//output the employee object
-const jsonOutput = JSON.stringify(employee, null, 2);
-console.log("Employee object:", jsonOutput);
+  case "add":
+    addEmployee();
+    break;
+
+  default:
+    console.log("Unknown command. Please use 'list' or 'add'.");
+    process.exit(1);
+}
